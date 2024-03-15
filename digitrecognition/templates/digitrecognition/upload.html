@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Digit Recognition</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        #canvas {
+            border: 1px solid black;
+            background-color: white;
+        }
+        #prediction {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Draw a digit</h2>
+    <canvas id="canvas" width="280" height="280"></canvas>
+    <br>
+    <button onclick="clearCanvas()">Clear</button>
+    <button onclick="submitCanvas()">Predict Digit</button>
+    <div id="prediction"></div> 
+    <script>
+        function initializeCanvas() {
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = "white"; // Set the background color to white
+            ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas with white
+        }
+    
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+    
+        var drawing = false;
+        function startDrawing(e) { drawing = true; draw(e); }
+        function stopDrawing() { drawing = false; ctx.beginPath(); }
+        function draw(e) {
+            if (!drawing) return;
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        }
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mousemove', draw);
+        
+        // Call initializeCanvas when the script loads
+        initializeCanvas();
+    
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            initializeCanvas(); // Reinitialize canvas to fill with white again after clearing
+        }
+    
+        function submitCanvas() {
+            var imageData = canvas.toDataURL('image/png').split(',')[1]; // Get the raw base64 data
+            fetch('/predict_digit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({'image_data': imageData})
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('prediction').innerText = 'Predicted Digit: ' + data.predicted_digit;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+    
+</body>
+</html>
