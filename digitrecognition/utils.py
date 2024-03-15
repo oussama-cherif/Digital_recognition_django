@@ -1,11 +1,11 @@
 from tensorflow.keras.models import load_model
 import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image
 import io
 import base64
 
 # Load the pre-trained model
-model_path = 'C:/Users/cheri/Documents/django_dr/digitrecognition/digit_rec_model/best_model.keras'
+model_path = 'digitrecognition/digit_rec_model/best_model.keras'
 model = load_model(model_path)
 
 

@@ -6,7 +6,7 @@ import json
 from django.core.files.storage import FileSystemStorage
 from .utils import predict_digit_from_image, preprocess_image
 import base64
-import logging  # Add this line
+import logging 
 
 logger = logging.getLogger(__name__)
 
